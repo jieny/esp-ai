@@ -13,4 +13,5 @@ example/index_copy.js
 
 # builds
 build 
- 
+.idea
+/yarn.lock
