@@ -55,6 +55,7 @@
 #define I2S_MIC_WIN 5
 #define I2S_MIC_DIN 6  
 #define MIC_i2s_num I2S_NUM_1
+#define LED_BUILTIN 48
 
 // 扬声器引脚
 #define I2S_DOUT 15
