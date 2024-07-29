@@ -298,18 +298,18 @@ void adjustVolume(int16_t *buffer, size_t length, float volume) {
 
 void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
   switch (type) {
-    case WStype_DISCONNECTED:
+    case WStype_DISCONNECTED: // 处理断开连接的逻辑
       can_voice = "1";
       start_ed = "0";
       digitalWrite(LED_BUILTIN, LOW);
       Serial.println("WebSocket Disconnected");
       break;
-    case WStype_CONNECTED:
+    case WStype_CONNECTED: // 处理连接的逻辑
       can_voice = "1";
       start_ed = "0";
       Serial.println("WebSocket Connected");
       break;
-    case WStype_TEXT:
+    case WStype_TEXT: // 处理文本消息的逻辑
       // 一边用喇叭，一边采集音频会很卡
       if (strcmp((char *)payload, "start_voice") == 0) {
         can_voice = "1";
@@ -346,7 +346,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
 
       Serial.printf("Received Text: %s\n", payload);
       break;
-    case WStype_BIN:
+    case WStype_BIN: // 处理二进制数据的逻辑
       {
         last_get_audio_time = millis();
         if (is_send_server_audio_over != "0") {
@@ -369,7 +369,7 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
 }
 
 
-
+// region 管理音频推理过程
 static bool microphone_inference_start(uint32_t n_samples) {
   inference.buffer = (int16_t *)malloc(n_samples * sizeof(int16_t));
 
@@ -394,7 +394,10 @@ static bool microphone_inference_start(uint32_t n_samples) {
   return true;
 }
 
-
+// 音频数据的连续处理
+// 采集到的音频数据被用来进行关键词识别
+// 不停地等待缓冲区准备好数据，然后进行推理
+//
 static bool microphone_inference_record(void) {
   bool ret = true;
 
@@ -416,8 +419,12 @@ static void microphone_inference_end(void) {
   i2s_deinit();
   ei_free(inference.buffer);
 }
+// endregion
 
-
+// 在一个 FreeRTOS 任务中运行，从 I2S 接口读取音频数据
+// 采集到的音频数据被发送到 WebSocket 服务器，同时也用于本地推理
+// 音频数据通过 I2S 接口从麦克风连续采集。capture_samples 函数使用 FreeRTOS 任务不停地读取音频数据并存入缓冲区
+//
 static void capture_samples(void *arg) {
 
   const int32_t i2s_bytes_to_read = (uint32_t)arg;
