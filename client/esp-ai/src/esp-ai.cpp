@@ -9,6 +9,7 @@
 #define I2S_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_LEFT
 #define MIC_i2s_num I2S_NUM_1
 #define YSQ_i2s_num I2S_NUM_0
+#define LED_BUILTIN 48
 
 #define DEBUG_PRINT(debug, x) \
     if (debug)                \
